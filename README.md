@@ -52,23 +52,48 @@ cd Au-yemek-Bot-ios
 ```
 
 ### 2. Web API (Backend) Kurulumu ve Veritabanı Migration Adımları
+
+**Gereksinimler:** .NET 10 SDK ve SQL Server LocalDB (Visual Studio ile birlikte gelir; kontrol için `sqllocaldb info` komutu `MSSQLLocalDB` döndürmelidir).
+
 ```bash
+# Depo kök klasöründe: migration aracını (dotnet-ef) yükle
+dotnet tool restore
+
+# Veritabanını (AuBotDb) oluştur, tabloları ve başlangıç verilerini ekle
 cd api
-dotnet user-secrets init
-dotnet user-secrets set "Telegram:BotToken" "TELEGRAM_BOT_TOKEN_BURAYA"
-dotnet user-secrets set "Jwt:Key" "GUVENLI_JWT_ANAHTARI_BURAYA"
+dotnet tool run dotnet-ef database update
+
+# Web API sunucusunu başlat
+dotnet run --launch-profile http
+```
+- API adresi: `http://localhost:5000`
+- **Swagger arayüzü:** `http://localhost:5000/swagger` (tüm uç noktalar buradan test edilebilir)
+
+Bağlantı dizesi `api/appsettings.json` içindeki `DefaultConnection` alanındadır:
+`Server=(localdb)\mssqllocaldb;Database=AuBotDb;Trusted_Connection=True;`
+
+Model sınıflarında değişiklik yapıldığında yeni migration oluşturmak için:
+```bash
+dotnet tool run dotnet-ef migrations add DegisiklikAdi
+dotnet tool run dotnet-ef database update
 ```
 
-*(2. haftada EF Core migration kurulumu tamamlandığında veritabanını oluşturmak için:)*
-```bash
-dotnet ef database update
-```
+### Web API Uç Noktaları (2. hafta itibarıyla)
 
-Web API sunucusunu başlatın:
-```bash
-dotnet run
-```
-API varsayılan olarak `http://localhost:5000` adresinde çalışır.
+| Metot | Uç Nokta | Açıklama |
+|---|---|---|
+| GET | `/api/kategoriler` | Tüm kategoriler (yemek sayısıyla) |
+| GET | `/api/kategoriler/{id}` | Tek kategori |
+| POST | `/api/kategoriler` | Kategori ekle |
+| PUT | `/api/kategoriler/{id}` | Kategori güncelle |
+| DELETE | `/api/kategoriler/{id}` | Kategori sil (bağlı yemek varsa 409) |
+| GET | `/api/yemekler?kategoriId=&ara=` | Yemekleri listele / filtrele / ara |
+| GET | `/api/yemekler/{id}` | Tek yemek |
+| POST | `/api/yemekler` | Yemek ekle |
+| PUT | `/api/yemekler/{id}` | Yemek güncelle |
+| DELETE | `/api/yemekler/{id}` | Yemek sil (menüde kullanılıyorsa 409) |
+| GET | `/api/menuler/bugun?ogun=1` | Bugünün menüsü (3. haftada veritabanına bağlanacak) |
+| GET | `/api/bot/adim?secenek=` | Seçenek tabanlı bot adımı |
 
 ### 3. Mobil Uygulama (Flutter) Kurulumu ve Çalıştırma
 - **Önerilen Flutter Sürümü:** Flutter 3.24+ (Dart SDK `^3.5.0`)
