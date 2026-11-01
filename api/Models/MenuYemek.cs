@@ -1,5 +1,8 @@
 namespace AuBot.Api.Models;
 
+/// <summary>
+/// Menü ve Yemek arasındaki çoka-çok (N–N) ilişkiyi kuran ara tablo modeli.
+/// </summary>
 public class MenuYemek
 {
     public int MenuId { get; set; }
@@ -8,5 +11,8 @@ public class MenuYemek
     public int YemekId { get; set; }
     public Yemek? Yemek { get; set; }
 
+    /// <summary>
+    /// Yemeğin o günkü menü içerisindeki gösterim sırası (1..4).
+    /// </summary>
     public int Sira { get; set; }
 }

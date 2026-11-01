@@ -2,6 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AuBot.Api.Models;
 
+/// <summary>
+/// Öğrencilerin belirli bir menüdeki yemeğe verdiği puan (1–5) ve yorum kaydını temsil eder.
+/// </summary>
 public class Degerlendirme
 {
     public int Id { get; set; }

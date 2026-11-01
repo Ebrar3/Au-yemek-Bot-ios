@@ -14,7 +14,12 @@ builder.Services.AddEndpointsApiExplorer();
 // Swagger (OpenAPI) dokümantasyonu
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "Aü Bot Web API", Version = "v1", Description = "Yemekhane menü, yemek ve değerlendirme servisleri" });
+    c.SwaggerDoc("v1", new()
+    {
+        Title = "Aü Bot Web API",
+        Version = "v1",
+        Description = "Ankara Üniversitesi Yemekhane menü, yemek, kategori ve değerlendirme Web API servisleri"
+    });
 });
 
 // Mobil istemci (Flutter) erişimi için CORS yapılandırması
@@ -29,6 +34,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Uygulama başlarken bekleyen EF Core migration'larını otomatik uygula
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<YemekBotDbContext>();
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {

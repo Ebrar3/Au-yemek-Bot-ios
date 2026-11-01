@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuBot.Api.Data;
 
+/// <summary>
+/// Aü Bot uygulaması Entity Framework Core veritabanı bağlamı (SQL Server LocalDB).
+/// Kategori–Yemek (1–N), Menü–Yemek (N–N) ve Değerlendirme ilişkilerini yönetir.
+/// </summary>
 public class YemekBotDbContext : DbContext
 {
     public YemekBotDbContext(DbContextOptions<YemekBotDbContext> options) : base(options)
@@ -19,14 +23,14 @@ public class YemekBotDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Kategori – Yemek (1–N)
+        // 1. Kategori – Yemek (1–N İlişkisi)
         modelBuilder.Entity<Yemek>()
             .HasOne(y => y.Kategori)
             .WithMany(k => k.Yemekler)
             .HasForeignKey(y => y.KategoriId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Menü – Yemek (N–N) ara tablosu: birleşik birincil anahtar
+        // 2. Menü – Yemek (N–N Ara Tablo ve Birleşik Birincil Anahtar)
         modelBuilder.Entity<MenuYemek>()
             .HasKey(my => new { my.MenuId, my.YemekId });
 
@@ -42,12 +46,12 @@ public class YemekBotDbContext : DbContext
             .HasForeignKey(my => my.YemekId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Aynı tarihte aynı öğünden yalnızca bir menü olabilir
+        // 3. Aynı tarihte aynı öğünden yalnızca tek bir menü kaydı bulunabilir
         modelBuilder.Entity<Menu>()
             .HasIndex(m => new { m.Tarih, m.Ogun })
             .IsUnique();
 
-        // Değerlendirme ilişkileri
+        // 4. Değerlendirme ilişkileri (Menü silinirse değerlendirmeleri silinir; yemek silinmesi kısıtlanır)
         modelBuilder.Entity<Degerlendirme>()
             .HasOne(d => d.Menu)
             .WithMany(m => m.Degerlendirmeler)
@@ -60,7 +64,7 @@ public class YemekBotDbContext : DbContext
             .HasForeignKey(d => d.YemekId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Başlangıç (seed) verileri
+        // 5. Başlangıç (Seed) Verileri: Kategoriler ve Örnek Yemekler
         modelBuilder.Entity<Kategori>().HasData(
             new Kategori { Id = 1, Ad = "Çorba", Sira = 1 },
             new Kategori { Id = 2, Ad = "Ana Yemek", Sira = 2 },
