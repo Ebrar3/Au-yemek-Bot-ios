@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'screens/monthly_calendar_screen.dart';
 import 'screens/bot_screen.dart';
 import 'screens/popular_foods_screen.dart';
 import 'screens/login_screen.dart';
@@ -38,6 +39,7 @@ class _MainShellState extends State<MainShell> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
+    MonthlyCalendarScreen(),
     BotScreen(),
     PopularFoodsScreen(),
     AdminPanelScreen(),
@@ -56,7 +58,8 @@ class _MainShellState extends State<MainShell> {
         selectedIndex: _selectedIndex,
         onDestinationSelected: (idx) => setState(() => _selectedIndex = idx),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.calendar_today), label: 'Menü'),
+          NavigationDestination(icon: Icon(Icons.today), label: 'Günlük'),
+          NavigationDestination(icon: Icon(Icons.calendar_month), label: 'Takvim'),
           NavigationDestination(icon: Icon(Icons.smart_toy_outlined), label: 'Aü Bot'),
           NavigationDestination(icon: Icon(Icons.star_outline), label: 'Popüler'),
           NavigationDestination(icon: Icon(Icons.admin_panel_settings_outlined), label: 'Yönetim'),

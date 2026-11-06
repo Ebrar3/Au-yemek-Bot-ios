@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/menu.dart';
 import '../models/yemek.dart';
 import '../services/api_service.dart';
 import 'food_detail_rating_screen.dart';
@@ -13,7 +14,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService _api = ApiService();
   bool _aksamMi = false;
-  late Future<Map<String, dynamic>> _menuFuture;
+  DateTime _seciliTarih = DateTime.now();
+  late Future<Menu> _menuFuture;
 
   @override
   void initState() {
@@ -21,9 +23,42 @@ class _HomeScreenState extends State<HomeScreen> {
     _menuyuYukle();
   }
 
-  /// Seçili öğüne göre API'den menüyü (yeniden) ister.
+  /// Seçili tarihe ve öğüne göre Web API'den menüyü ister.
   void _menuyuYukle() {
-    _menuFuture = _api.getBugununMenusu(ogun: _aksamMi ? 2 : 1);
+    _menuFuture = _api.getGunlukMenu(
+      tarih: _seciliTarih,
+      ogun: _aksamMi ? 2 : 1,
+    );
+  }
+
+  void _gunDegistir(int gunFarki) {
+    setState(() {
+      _seciliTarih = _seciliTarih.add(Duration(days: gunFarki));
+      _menuyuYukle();
+    });
+  }
+
+  Future<void> _tarihSec(BuildContext context) async {
+    final secilen = await showDatePicker(
+      context: context,
+      initialDate: _seciliTarih,
+      firstDate: DateTime(2026, 1, 1),
+      lastDate: DateTime(2027, 12, 31),
+    );
+    if (secilen != null) {
+      setState(() {
+        _seciliTarih = secilen;
+        _menuyuYukle();
+      });
+    }
+  }
+
+  String _tarihBicimlendir(DateTime t) {
+    const aylar = [
+      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
+    return '${t.day} ${aylar[t.month - 1]} ${t.year}';
   }
 
   @override
@@ -36,6 +71,38 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // 1) Gün Gezinme Çubuğu
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    tooltip: 'Önceki Gün',
+                    onPressed: () => _gunDegistir(-1),
+                    icon: const Icon(Icons.chevron_left),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => _tarihSec(context),
+                    icon: const Icon(Icons.event),
+                    label: Text(
+                      _tarihBicimlendir(_seciliTarih),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Sonraki Gün',
+                    onPressed: () => _gunDegistir(1),
+                    icon: const Icon(Icons.chevron_right),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // 2) Öğle / Akşam Seçici
           SegmentedButton<bool>(
             segments: const [
               ButtonSegment(value: false, label: Text('☀️ Öğle Menüsü')),
@@ -48,47 +115,74 @@ class _HomeScreenState extends State<HomeScreen> {
             }),
           ),
           const SizedBox(height: 16),
-          FutureBuilder<Map<String, dynamic>>(
+
+          // 3) API'den Gelen Günlük Menü Kartları
+          FutureBuilder<Menu>(
             future: _menuFuture,
             builder: (context, snapshot) {
-              // 1) Yükleniyor durumu
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Padding(
                   padding: EdgeInsets.all(32),
                   child: Center(child: CircularProgressIndicator()),
                 );
               }
-              // 2) Hata durumu (API kapalı, internet yok vb.)
+
               if (snapshot.hasError) {
                 return _HataKarti(
                   mesaj: 'Menü yüklenemedi. Web API çalışıyor mu?\n${snapshot.error}',
                   onTekrar: () => setState(_menuyuYukle),
                 );
               }
-              // 3) Başarılı durum
-              final data = snapshot.data!;
-              final yemekler = (data['yemekler'] as List<dynamic>)
-                  .map((e) => Yemek.fromJson(e as Map<String, dynamic>))
-                  .toList();
+
+              final menu = snapshot.data!;
+
+              // Resmi tatil günü gösterimi
+              if (menu.tatilMi) {
+                return _TatilKarti(
+                  tarihMetni: _tarihBicimlendir(menu.tarih),
+                  aciklama: menu.aciklama ?? 'Resmi Tatil – Yemekhane Hizmet Vermemektedir',
+                );
+              }
+
               return Column(
                 children: [
                   Card(
+                    color: Theme.of(context).colorScheme.primaryContainer,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            _aksamMi ? 'Bugünün Akşam Menüsü' : 'Bugünün Öğle Menüsü',
-                            style: Theme.of(context).textTheme.titleMedium,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _aksamMi ? 'Günlük Akşam Menüsü' : 'Günlük Öğle Menüsü',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _tarihBicimlendir(menu.tarih),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
                           ),
-                          Chip(label: Text('${data['toplamKalori'] ?? '-'} kcal')),
+                          Chip(
+                            avatar: const Icon(Icons.local_fire_department, size: 18),
+                            label: Text(
+                              menu.toplamKalori != null
+                                  ? '${menu.toplamKalori} kcal'
+                                  : 'Kalori Bilgisi Yok',
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ...yemekler.map((yemek) => _YemekKarti(yemek: yemek)),
+                  ...menu.yemekler.map((yemek) => _YemekKarti(yemek: yemek)),
                 ],
               );
             },
@@ -99,16 +193,73 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class _TatilKarti extends StatelessWidget {
+  final String tarihMetni;
+  final String aciklama;
+
+  const _TatilKarti({
+    required this.tarihMetni,
+    required this.aciklama,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Colors.amber.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const Icon(Icons.celebration, size: 48, color: Colors.deepOrange),
+            const SizedBox(height: 12),
+            Text(
+              'Resmi Tatil Günü',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(tarihMetni, style: Theme.of(context).textTheme.bodyMedium),
+            const SizedBox(height: 12),
+            Text(
+              aciklama,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Colors.deepOrange.shade800,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _YemekKarti extends StatelessWidget {
   final Yemek yemek;
   const _YemekKarti({required this.yemek});
+
+  IconData _kategoriIkonu(String kategori) {
+    final k = kategori.toLowerCase();
+    if (k.contains('çorba')) return Icons.soup_kitchen;
+    if (k.contains('ana')) return Icons.dinner_dining;
+    if (k.contains('yardımcı')) return Icons.rice_bowl;
+    return Icons.icecream;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(_kategoriIkonu(yemek.kategoriAdi)),
+        ),
         title: Text(yemek.ad),
-        subtitle: Text('${yemek.kategoriAdi} • ${yemek.kalori ?? '-'} kcal'),
+        subtitle: Text(
+          yemek.kalori != null
+              ? '${yemek.kategoriAdi} • ${yemek.kalori} kcal'
+              : yemek.kategoriAdi,
+        ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
