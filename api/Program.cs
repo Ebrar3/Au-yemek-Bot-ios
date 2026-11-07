@@ -1,4 +1,6 @@
 using AuBot.Api.Data;
+using AuBot.Api.Models;
+using AuBot.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Veritabanı: SQL Server LocalDB + Entity Framework Core
 builder.Services.AddDbContext<YemekBotDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Servisler: ClosedXML Excel menü ayrıştırma servisi
+builder.Services.AddScoped<ExcelMenuServisi>();
 
 // Controller ve JSON ayarları
 builder.Services.AddControllers();
@@ -35,11 +40,31 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Uygulama başlarken bekleyen EF Core migration'larını otomatik uygula
+// Uygulama başlarken bekleyen EF Core migration'larını uygula ve OrnekMenuler Excel dosyalarını içe aktar
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<YemekBotDbContext>();
     db.Database.Migrate();
+
+    if (!db.Menuler.Any())
+    {
+        var excelServisi = scope.ServiceProvider.GetRequiredService<ExcelMenuServisi>();
+        var ornekKlasor = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "..", "OrnekMenuler"));
+        var ogleDosya = Path.Combine(ornekKlasor, "Ekim_2026_Ogle_Menusu.xlsx");
+        var aksamDosya = Path.Combine(ornekKlasor, "Ekim_2026_Aksam_Menusu.xlsx");
+
+        if (File.Exists(ogleDosya))
+        {
+            using var akis = File.OpenRead(ogleDosya);
+            await excelServisi.YukleAsync(akis, Path.GetFileName(ogleDosya), OgunTuru.Ogle);
+        }
+
+        if (File.Exists(aksamDosya))
+        {
+            using var akis = File.OpenRead(aksamDosya);
+            await excelServisi.YukleAsync(akis, Path.GetFileName(aksamDosya), OgunTuru.Aksam);
+        }
+    }
 }
 
 if (app.Environment.IsDevelopment())
