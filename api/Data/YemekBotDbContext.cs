@@ -1,13 +1,14 @@
 using AuBot.Api.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuBot.Api.Data;
 
 /// <summary>
-/// Aü Bot uygulaması Entity Framework Core veritabanı bağlamı (SQL Server LocalDB).
-/// Kategori–Yemek (1–N), Menü–Yemek (N–N) ve Değerlendirme ilişkilerini yönetir.
+/// Aü Bot uygulaması Entity Framework Core + ASP.NET Core Identity veritabanı bağlamı (SQL Server LocalDB).
+/// Kullanıcı/Rol (Identity), Kategori–Yemek (1–N), Menü–Yemek (N–N) ve Değerlendirme ilişkilerini yönetir.
 /// </summary>
-public class YemekBotDbContext : DbContext
+public class YemekBotDbContext : IdentityDbContext<Kullanici>
 {
     public YemekBotDbContext(DbContextOptions<YemekBotDbContext> options) : base(options)
     {
@@ -51,7 +52,13 @@ public class YemekBotDbContext : DbContext
             .HasIndex(m => new { m.Tarih, m.Ogun })
             .IsUnique();
 
-        // 4. Değerlendirme ilişkileri (Menü silinirse değerlendirmeleri silinir; yemek silinmesi kısıtlanır)
+        // 4. Değerlendirme ilişkileri (Kullanıcı, Menü ve Yemek)
+        modelBuilder.Entity<Degerlendirme>()
+            .HasOne(d => d.Kullanici)
+            .WithMany(k => k.Degerlendirmeler)
+            .HasForeignKey(d => d.KullaniciId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<Degerlendirme>()
             .HasOne(d => d.Menu)
             .WithMany(m => m.Degerlendirmeler)

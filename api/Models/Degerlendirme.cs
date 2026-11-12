@@ -10,6 +10,7 @@ public class Degerlendirme
     public int Id { get; set; }
 
     public string? KullaniciId { get; set; }
+    public Kullanici? Kullanici { get; set; }
 
     public int MenuId { get; set; }
     public Menu? Menu { get; set; }
