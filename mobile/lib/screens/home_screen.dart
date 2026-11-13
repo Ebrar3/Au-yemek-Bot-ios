@@ -13,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService _api = ApiService();
-  bool _aksamMi = false;
+  OgunTuru _seciliOgun = OgunTuru.ogle;
   DateTime _seciliTarih = DateTime.now();
   late Future<Menu> _menuFuture;
 
@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _menuyuYukle() {
     _menuFuture = _api.getGunlukMenu(
       tarih: _seciliTarih,
-      ogun: _aksamMi ? 2 : 1,
+      ogun: _seciliOgun.deger,
     );
   }
 
@@ -102,15 +102,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 12),
 
-          // 2) Öğle / Akşam Seçici
-          SegmentedButton<bool>(
+          // 2) Öğle / Akşam / Vejetaryen Seçici
+          SegmentedButton<OgunTuru>(
             segments: const [
-              ButtonSegment(value: false, label: Text('☀️ Öğle Menüsü')),
-              ButtonSegment(value: true, label: Text('🌙 Akşam Menüsü')),
+              ButtonSegment(value: OgunTuru.ogle, label: Text('☀️ Öğle')),
+              ButtonSegment(value: OgunTuru.aksam, label: Text('🌙 Akşam')),
+              ButtonSegment(value: OgunTuru.vejetaryen, label: Text('🌱 Vejetaryen')),
             ],
-            selected: {_aksamMi},
+            selected: {_seciliOgun},
             onSelectionChanged: (secim) => setState(() {
-              _aksamMi = secim.first;
+              _seciliOgun = secim.first;
               _menuyuYukle();
             }),
           ),
@@ -157,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _aksamMi ? 'Günlük Akşam Menüsü' : 'Günlük Öğle Menüsü',
+                                'Günlük ${_seciliOgun.etiket} Menüsü',
                                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),

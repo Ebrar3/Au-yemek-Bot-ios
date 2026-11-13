@@ -2,15 +2,20 @@ import 'yemek.dart';
 
 enum OgunTuru {
   ogle(1, 'Öğle'),
-  aksam(2, 'Akşam');
+  aksam(2, 'Akşam'),
+  vejetaryen(3, 'Vejetaryen');
 
   final int deger;
   final String etiket;
   const OgunTuru(this.deger, this.etiket);
 
   static OgunTuru fromValue(dynamic val) {
-    if (val == 2 || val?.toString().toLowerCase() == 'aksam') {
+    final metin = val?.toString().toLowerCase();
+    if (val == 2 || metin == 'aksam') {
       return OgunTuru.aksam;
+    }
+    if (val == 3 || metin == 'vejetaryen') {
+      return OgunTuru.vejetaryen;
     }
     return OgunTuru.ogle;
   }

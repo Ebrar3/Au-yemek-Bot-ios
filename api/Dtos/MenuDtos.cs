@@ -41,7 +41,7 @@ public class MenuKaydetDto : IValidatableObject
     public DateOnly? Tarih { get; set; }
 
     [Required(ErrorMessage = "Öğün zorunludur.")]
-    [EnumDataType(typeof(OgunTuru), ErrorMessage = "Öğün 1 (Öğle) veya 2 (Akşam) olmalıdır.")]
+    [EnumDataType(typeof(OgunTuru), ErrorMessage = "Öğün 1 (Öğle), 2 (Akşam) veya 3 (Vejetaryen) olmalıdır.")]
     public OgunTuru? Ogun { get; set; }
 
     public bool TatilMi { get; set; }
@@ -79,8 +79,8 @@ public class ExcelYuklemeIstegiDto
     [Required(ErrorMessage = "Excel dosyası seçilmelidir.")]
     public IFormFile? Dosya { get; set; }
 
-    /// <summary>Boş bırakılırsa dosya başlığından ("AKŞAM YEMEK MENÜSÜ") otomatik algılanır.</summary>
-    [EnumDataType(typeof(OgunTuru), ErrorMessage = "Öğün 1 (Öğle) veya 2 (Akşam) olmalıdır.")]
+    /// <summary>Boş bırakılırsa dosya başlığından ("AKŞAM" / "VEJETARYEN") otomatik algılanır.</summary>
+    [EnumDataType(typeof(OgunTuru), ErrorMessage = "Öğün 1 (Öğle), 2 (Akşam) veya 3 (Vejetaryen) olmalıdır.")]
     public OgunTuru? Ogun { get; set; }
 }
 

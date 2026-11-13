@@ -88,10 +88,14 @@ public partial class ExcelMenuServisi
         if (istenen.HasValue)
             return istenen.Value;
 
-        // Başlık satırlarında "AKŞAM" geçiyorsa akşam menüsüdür ("2026 AKŞAM YEMEK MENÜSÜ")
+        // Başlık satırlarında "VEJETARYEN" veya "AKŞAM" geçiyorsa ilgili öğün türü seçilir
         var baslik = string.Join(" ", Enumerable.Range(1, 3).Select(r => sayfa.Cell(r, 1).GetString()))
                            .ToUpper(TrKultur);
-        var ogun = baslik.Contains("AKŞAM") ? OgunTuru.Aksam : OgunTuru.Ogle;
+        var ogun = baslik.Contains("VEJETARYEN")
+            ? OgunTuru.Vejetaryen
+            : baslik.Contains("AKŞAM")
+                ? OgunTuru.Aksam
+                : OgunTuru.Ogle;
         uyarilar.Add($"Öğün belirtilmedi; dosya başlığına göre '{MenuIslemleri.OgunAdi(ogun)}' olarak algılandı.");
         return ogun;
     }

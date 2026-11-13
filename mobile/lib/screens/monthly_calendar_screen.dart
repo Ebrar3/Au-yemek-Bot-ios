@@ -15,10 +15,10 @@ class MonthlyCalendarScreen extends StatefulWidget {
 
 class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
   final ApiService _api = ApiService();
-  int _yil = 2026;
-  int _ay = 10; // Örnek Excel menülerinin bulunduğu Ekim 2026 ile başlar
-  bool _aksamMi = false;
-  int _seciliGun = 1;
+  int _yil = DateTime.now().year;
+  int _ay = DateTime.now().month; // İçinde bulunduğumuz ay (Kasım 2026) ile başlar
+  OgunTuru _seciliOgun = OgunTuru.ogle;
+  int _seciliGun = DateTime.now().day;
 
   late Future<List<Menu>> _aylikMenuFuture;
 
@@ -39,7 +39,7 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
     _aylikMenuFuture = _api.getAylikMenuler(
       yil: _yil,
       ay: _ay,
-      ogun: _aksamMi ? 2 : 1,
+      ogun: _seciliOgun.deger,
     );
   }
 
@@ -87,15 +87,16 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
         ),
         const SizedBox(height: 12),
 
-        // 2) Öğle / Akşam Seçimi
-        SegmentedButton<bool>(
+        // 2) Öğle / Akşam / Vejetaryen Seçimi
+        SegmentedButton<OgunTuru>(
           segments: const [
-            ButtonSegment(value: false, label: Text('☀️ Öğle Takvimi')),
-            ButtonSegment(value: true, label: Text('🌙 Akşam Takvimi')),
+            ButtonSegment(value: OgunTuru.ogle, label: Text('☀️ Öğle')),
+            ButtonSegment(value: OgunTuru.aksam, label: Text('🌙 Akşam')),
+            ButtonSegment(value: OgunTuru.vejetaryen, label: Text('🌱 Vejetaryen')),
           ],
-          selected: {_aksamMi},
+          selected: {_seciliOgun},
           onSelectionChanged: (secim) => setState(() {
-            _aksamMi = secim.first;
+            _seciliOgun = secim.first;
             _verileriYukle();
           }),
         ),
@@ -246,7 +247,7 @@ class _MonthlyCalendarScreenState extends State<MonthlyCalendarScreen> {
                 // Seçili günün detay kartı
                 _SeciliGunMenuDetayi(
                   tarihMetni: '$_seciliGun ${_ayAdlari[_ay - 1]} $_yil',
-                  ogunMetni: _aksamMi ? 'Akşam Menüsü' : 'Öğle Menüsü',
+                  ogunMetni: '${_seciliOgun.etiket} Menüsü',
                   menu: seciliMenu,
                 ),
               ],

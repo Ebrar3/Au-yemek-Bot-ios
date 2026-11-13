@@ -110,23 +110,29 @@ using (var scope = app.Services.CreateScope())
 
     await IdentitySeedVerisi.RolleriVeOrnekKullanicilariOlusturAsync(servisler);
 
-    if (!await db.Menuler.AnyAsync())
+    var excelServisi = servisler.GetRequiredService<ExcelMenuServisi>();
+    var ornekKlasor = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "..", "OrnekMenuler"));
+    var baslangicDosyalari = new (string DosyaAdi, OgunTuru Ogun, int Yil, int Ay)[]
     {
-        var excelServisi = servisler.GetRequiredService<ExcelMenuServisi>();
-        var ornekKlasor = Path.GetFullPath(Path.Combine(app.Environment.ContentRootPath, "..", "OrnekMenuler"));
-        var ogleDosya = Path.Combine(ornekKlasor, "Ekim_2026_Ogle_Menusu.xlsx");
-        var aksamDosya = Path.Combine(ornekKlasor, "Ekim_2026_Aksam_Menusu.xlsx");
+        ("Ekim_2026_Ogle_Menusu.xlsx", OgunTuru.Ogle, 2026, 10),
+        ("Ekim_2026_Aksam_Menusu.xlsx", OgunTuru.Aksam, 2026, 10),
+        ("Kasim_2026_Ogle_Menusu.xlsx", OgunTuru.Ogle, 2026, 11),
+        ("Kasim_2026_Aksam_Menusu.xlsx", OgunTuru.Aksam, 2026, 11),
+        ("Kasim_2026_Vejetaryen_Menusu.xlsx", OgunTuru.Vejetaryen, 2026, 11)
+    };
 
-        if (File.Exists(ogleDosya))
-        {
-            using var akis = File.OpenRead(ogleDosya);
-            await excelServisi.YukleAsync(akis, Path.GetFileName(ogleDosya), OgunTuru.Ogle);
-        }
+    foreach (var (dosyaAdi, ogun, yil, ay) in baslangicDosyalari)
+    {
+        var dosyaYolu = Path.Combine(ornekKlasor, dosyaAdi);
+        if (!File.Exists(dosyaYolu))
+            continue;
 
-        if (File.Exists(aksamDosya))
+        var ayYukluMu = await db.Menuler.AnyAsync(m =>
+            m.Ogun == ogun && m.Tarih.Year == yil && m.Tarih.Month == ay);
+        if (!ayYukluMu)
         {
-            using var akis = File.OpenRead(aksamDosya);
-            await excelServisi.YukleAsync(akis, Path.GetFileName(aksamDosya), OgunTuru.Aksam);
+            using var akis = File.OpenRead(dosyaYolu);
+            await excelServisi.YukleAsync(akis, dosyaAdi, ogun);
         }
     }
 }

@@ -48,5 +48,10 @@ public static class MenuIslemleri
         return yemekler.Sum(y => y.Kalori!.Value);
     }
 
-    public static string OgunAdi(OgunTuru ogun) => ogun == OgunTuru.Aksam ? "Akşam" : "Öğle";
+    public static string OgunAdi(OgunTuru ogun) => ogun switch
+    {
+        OgunTuru.Aksam => "Akşam",
+        OgunTuru.Vejetaryen => "Vejetaryen",
+        _ => "Öğle"
+    };
 }
