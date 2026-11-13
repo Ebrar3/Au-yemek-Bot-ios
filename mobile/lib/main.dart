@@ -5,6 +5,7 @@ import 'screens/bot_screen.dart';
 import 'screens/popular_foods_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/admin_panel_screen.dart';
+import 'services/auth_service.dart';
 
 void main() {
   runApp(const AuBotApp());
@@ -48,24 +49,43 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Aü Bot – Yemekhane Asistanı'),
-        centerTitle: true,
-      ),
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (idx) => setState(() => _selectedIndex = idx),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.today), label: 'Günlük'),
-          NavigationDestination(icon: Icon(Icons.calendar_month), label: 'Takvim'),
-          NavigationDestination(icon: Icon(Icons.smart_toy_outlined), label: 'Aü Bot'),
-          NavigationDestination(icon: Icon(Icons.star_outline), label: 'Popüler'),
-          NavigationDestination(icon: Icon(Icons.admin_panel_settings_outlined), label: 'Yönetim'),
-          NavigationDestination(icon: Icon(Icons.person_outline), label: 'Giriş'),
-        ],
-      ),
+    return ListenableBuilder(
+      listenable: AuthService.instance,
+      builder: (context, _) {
+        final aktif = AuthService.instance.aktifKullanici;
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Aü Bot – Yemekhane Asistanı'),
+            centerTitle: true,
+            actions: [
+              if (aktif != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Chip(
+                    label: Text(aktif.rol),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+            ],
+          ),
+          body: _screens[_selectedIndex],
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (idx) => setState(() => _selectedIndex = idx),
+            destinations: [
+              const NavigationDestination(icon: Icon(Icons.today), label: 'Günlük'),
+              const NavigationDestination(icon: Icon(Icons.calendar_month), label: 'Takvim'),
+              const NavigationDestination(icon: Icon(Icons.smart_toy_outlined), label: 'Aü Bot'),
+              const NavigationDestination(icon: Icon(Icons.star_outline), label: 'Popüler'),
+              const NavigationDestination(icon: Icon(Icons.admin_panel_settings_outlined), label: 'Yönetim'),
+              NavigationDestination(
+                icon: Icon(aktif != null ? Icons.verified_user : Icons.person_outline),
+                label: aktif != null ? 'Profil' : 'Giriş',
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
