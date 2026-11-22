@@ -59,7 +59,7 @@ cd Au-yemek-Bot-ios
 # Depo kök klasöründe: migration aracını (dotnet-ef) yükle
 dotnet tool restore
 
-# Veritabanını (AuBotDb) oluştur, tabloları ve başlangıç verilerini ekle
+# Veritabanını (AuBotIos) oluştur, tabloları ve başlangıç verilerini ekle
 cd api
 dotnet tool run dotnet-ef database update
 
@@ -70,7 +70,7 @@ dotnet run --launch-profile http
 - **Swagger arayüzü:** `http://localhost:5000/swagger` (tüm uç noktalar buradan test edilebilir)
 
 Bağlantı dizesi `api/appsettings.json` içindeki `DefaultConnection` alanındadır:
-`Server=(localdb)\mssqllocaldb;Database=AuBotDb;Trusted_Connection=True;`
+`Server=(localdb)\mssqllocaldb;Database=AuBotIos;Trusted_Connection=True;`
 
 Model sınıflarında değişiklik yapıldığında yeni migration oluşturmak için:
 ```bash
