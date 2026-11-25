@@ -2,6 +2,7 @@ using AuBot.Api.Data;
 using AuBot.Api.Dtos;
 using AuBot.Api.Models;
 using AuBot.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -141,8 +142,11 @@ public class MenulerController : ControllerBase
 
     // POST: api/menuler
     [HttpPost]
+    [Authorize(Roles = Roller.Yonetici)]
     [ProducesResponseType(typeof(MenuDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<MenuDto>> Create([FromBody] MenuKaydetDto dto)
     {
@@ -174,8 +178,11 @@ public class MenulerController : ControllerBase
 
     // PUT: api/menuler/5
     [HttpPut("{id:int}")]
+    [Authorize(Roles = Roller.Yonetici)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int id, [FromBody] MenuKaydetDto dto)
@@ -211,7 +218,10 @@ public class MenulerController : ControllerBase
 
     // DELETE: api/menuler/5
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = Roller.Yonetici)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
@@ -227,9 +237,12 @@ public class MenulerController : ControllerBase
 
     // POST: api/menuler/excel-yukle
     [HttpPost("excel-yukle")]
+    [Authorize(Roles = Roller.Yonetici)]
     [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(ExcelYuklemeSonucDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<ExcelYuklemeSonucDto>> ExcelYukle([FromForm] ExcelYuklemeIstegiDto istek, CancellationToken ct)
     {
         if (istek.Dosya is null || istek.Dosya.Length == 0)

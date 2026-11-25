@@ -2,6 +2,7 @@ using System.Globalization;
 using AuBot.Api.Data;
 using AuBot.Api.Dtos;
 using AuBot.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -83,8 +84,11 @@ public class YemeklerController : ControllerBase
 
     // POST: api/yemekler
     [HttpPost]
+    [Authorize(Roles = Roller.Yonetici)]
     [ProducesResponseType(typeof(YemekDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<YemekDto>> Create(YemekKaydetDto dto)
     {
@@ -113,8 +117,11 @@ public class YemeklerController : ControllerBase
 
     // PUT: api/yemekler/5
     [HttpPut("{id:int}")]
+    [Authorize(Roles = Roller.Yonetici)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int id, YemekKaydetDto dto)
@@ -141,7 +148,10 @@ public class YemeklerController : ControllerBase
 
     // DELETE: api/yemekler/5
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = Roller.Yonetici)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(int id)

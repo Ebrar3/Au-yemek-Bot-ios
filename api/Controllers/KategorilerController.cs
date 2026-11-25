@@ -1,6 +1,7 @@
 using AuBot.Api.Data;
 using AuBot.Api.Dtos;
 using AuBot.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,8 +56,11 @@ public class KategorilerController : ControllerBase
 
     // POST: api/kategoriler
     [HttpPost]
+    [Authorize(Roles = Roller.Yonetici)]
     [ProducesResponseType(typeof(KategoriDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<KategoriDto>> Create(KategoriKaydetDto dto)
     {
@@ -79,7 +83,10 @@ public class KategorilerController : ControllerBase
 
     // PUT: api/kategoriler/5
     [HttpPut("{id:int}")]
+    [Authorize(Roles = Roller.Yonetici)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(int id, KategoriKaydetDto dto)
@@ -101,7 +108,10 @@ public class KategorilerController : ControllerBase
 
     // DELETE: api/kategoriler/5
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = Roller.Yonetici)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(int id)
